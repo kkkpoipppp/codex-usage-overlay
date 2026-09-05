@@ -1,5 +1,8 @@
 # Codex Usage Overlay
 
+[![Tests](https://github.com/kkkpoipppp/codex-usage-overlay/actions/workflows/tests.yml/badge.svg)](https://github.com/kkkpoipppp/codex-usage-overlay/actions/workflows/tests.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
 > 面向 Codex Windows 桌面版的非官方额度悬浮条。
 
 这是一个轻量的 Windows 小程序。它通过 Codex 的本地只读接口获取
@@ -47,7 +50,12 @@
 
 ### 使用方式
 
-下载仓库后，双击 `install_codex_usage_overlay.bat`。安装程序会：
+```powershell
+git clone https://github.com/kkkpoipppp/codex-usage-overlay.git
+cd codex-usage-overlay
+```
+
+然后双击 `install_codex_usage_overlay.bat`。安装程序会：
 
 1. 复制程序到 `%LOCALAPPDATA%\CodexUsageOverlay`。
 2. 在当前用户的“启动”目录创建快捷方式。
