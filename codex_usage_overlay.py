@@ -215,15 +215,15 @@ def _window_value(window, key):
     return None
 
 
-def _normalize_window(window):
+def _normalize_window(window, require_reset=True):
     used_percent = _window_value(window, "used_percent")
     resets_at = _window_value(window, "resets_at")
     window_minutes = _window_value(window, "window_minutes")
-    if used_percent is None or resets_at is None:
+    if used_percent is None or (require_reset and resets_at is None):
         return None
     return {
         "used_percent": float(used_percent),
-        "resets_at": float(resets_at),
+        "resets_at": float(resets_at) if resets_at is not None else None,
         "window_minutes": int(window_minutes or 0),
     }
 
@@ -286,7 +286,7 @@ def normalize_live_rate_limits(result):
     )
     if data:
         reserve = buckets.get("base_model_inference") or {}
-        data["reserve"] = _normalize_window(reserve.get("primary"))
+        data["reserve"] = _normalize_window(reserve.get("primary"), require_reset=False)
     return data
 
 
@@ -377,7 +377,7 @@ def usage_fields(data):
         return "5小时 --", "本周 --"
     if exhausted_window(data):
         remaining = remaining_percent(data.get("reserve"))
-        return ("备用 --" if remaining is None else f"备用 {remaining}%", "常规恢复")
+        return ("备用 未提供" if remaining is None else f"备用 {remaining}%", "常规恢复")
     five_hour = remaining_percent(data.get("five_hour"))
     weekly = remaining_percent(data.get("weekly"))
     left = "5小时 --" if five_hour is None else f"5小时 {five_hour}%"
@@ -407,7 +407,7 @@ def usage_reset_fields(data):
     windows = [None, exhausted] if exhausted else [(data or {}).get(name) for name in ("five_hour", "weekly")]
     for index, window in enumerate(windows):
         if exhausted and index == 0:
-            fields.append("剩余额度")
+            fields.append("接口未返回" if not data.get("reserve") else "剩余额度")
             continue
         window = window or {}
         epoch = window.get("resets_at")
@@ -547,7 +547,7 @@ class LiveRateLimitClient:
                 next_refresh = 0.0
                 continue
             result = message.get("result")
-            if result and "rateLimits" in result:
+            if result and ("rateLimits" in result or "rateLimitsByLimitId" in result):
                 data = normalize_live_rate_limits(result)
                 if data:
                     with self._lock:

@@ -25,7 +25,24 @@ class UsageParsingTests(unittest.TestCase):
         week = {"used_percent": 100, "resets_at": 1789007110}
         data = {"weekly": week}
         self.assertIs(overlay.exhausted_window(data), week)
-        self.assertEqual(overlay.usage_fields(data), ("备用 --", "常规恢复"))
+        self.assertEqual(overlay.usage_fields(data), ("备用 未提供", "常规恢复"))
+        self.assertEqual(overlay.usage_reset_fields(data)[0], "接口未返回")
+
+    def test_reserve_percentage_survives_missing_reset_time(self):
+        bucket = {"limitId": "codex", "primary": {
+            "usedPercent": 100, "resetsAt": 1789543703, "windowDurationMins": 300}}
+        result = {"rateLimitsByLimitId": {"codex": bucket,
+            "base_model_inference": {"primary": {"usedPercent": 24}}}}
+        data = overlay.normalize_live_rate_limits(result)
+        self.assertEqual(overlay.usage_fields(data), ("备用 76%", "常规恢复"))
+        self.assertEqual(overlay.usage_reset_fields(data)[0], "剩余额度")
+
+    def test_missing_reserve_does_not_reuse_previous_percentage(self):
+        bucket = {"limitId": "codex", "primary": {
+            "usedPercent": 100, "resetsAt": 1789543703, "windowDurationMins": 300}}
+        data = overlay.normalize_live_rate_limits({"rateLimitsByLimitId": {"codex": bucket}})
+        self.assertIsNone(data["reserve"])
+        self.assertEqual(overlay.usage_fields(data)[0], "备用 未提供")
 
     def test_rounded_zero_is_not_exhaustion(self):
         self.assertIsNone(overlay.exhausted_window({"five_hour": {"used_percent": 99.6}}))
