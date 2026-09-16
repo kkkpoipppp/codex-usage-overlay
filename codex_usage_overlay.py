@@ -29,7 +29,7 @@ GLOBAL_STATE_PATH = CODEX_HOME / ".codex-global-state.json"
 REFRESH_MS = 5_000
 LIVE_REFRESH_SECONDS = 30
 LIVE_RETRY_SECONDS = 15
-TRACK_MS = 8
+TRACK_MS = 4
 DISCOVERY_MS = 500
 SIDEBAR_WIDTH = 274
 TRANSPARENT_COLOR = "#ff00fe"
@@ -37,7 +37,7 @@ OVERLAY_HEIGHT = 102
 COLLAPSED_HEIGHT = 24
 AUTO_COLLAPSE_SECONDS = 4
 LEFT_OFFSET = 8
-BOTTOM_OFFSET = 153
+BOTTOM_GAP = 43
 PROFILE_WIDTH = 285
 PROFILE_HEIGHT = 52
 MENU_WIDTH = 300
@@ -998,8 +998,7 @@ class Overlay:
         self.set_owner(self.codex_hwnd)
         self.update_sidebar_width(rect)
         height = OVERLAY_HEIGHT if self.expanded else COLLAPSED_HEIGHT
-        bottom_gap = BOTTOM_OFFSET - OVERLAY_HEIGHT
-        target = (rect.left + LEFT_OFFSET, rect.bottom - bottom_gap - height, self.sidebar_width, height)
+        target = (rect.left + LEFT_OFFSET, rect.bottom - BOTTOM_GAP - height, self.sidebar_width, height)
         if target != self.last_target or not self.is_shown:
             user32.SetWindowPos(
                 self.overlay_hwnd,
