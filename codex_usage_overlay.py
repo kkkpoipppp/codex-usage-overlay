@@ -377,7 +377,7 @@ def usage_fields(data):
         return "5小时 --", "本周 --"
     if exhausted_window(data):
         remaining = remaining_percent(data.get("reserve"))
-        return ("备用 未提供" if remaining is None else f"备用 {remaining}%", "常规恢复")
+        return ("备用 --" if remaining is None else f"备用 {remaining}%", "常规恢复")
     five_hour = remaining_percent(data.get("five_hour"))
     weekly = remaining_percent(data.get("weekly"))
     left = "5小时 --" if five_hour is None else f"5小时 {five_hour}%"
@@ -407,7 +407,7 @@ def usage_reset_fields(data):
     windows = [None, exhausted] if exhausted else [(data or {}).get(name) for name in ("five_hour", "weekly")]
     for index, window in enumerate(windows):
         if exhausted and index == 0:
-            fields.append("接口未返回" if not data.get("reserve") else "剩余额度")
+            fields.append("")
             continue
         window = window or {}
         epoch = window.get("resets_at")
